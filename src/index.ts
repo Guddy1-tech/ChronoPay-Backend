@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import { listSlots } from "./services/slotService.js";
 
 const app = express();
 const PORT = process.env.PORT ?? 3001;
@@ -11,8 +12,26 @@ app.get("/health", (_req, res) => {
   res.json({ status: "ok", service: "chronopay-backend" });
 });
 
-app.get("/api/v1/slots", (_req, res) => {
-  res.json({ slots: [] });
+app.get("/api/v1/slots", async (req, res) => {
+  try {
+    const pageRaw = req.query.page;
+    const limitRaw = req.query.limit;
+
+    const page = pageRaw === undefined ? undefined : Number(pageRaw);
+    const limit = limitRaw === undefined ? undefined : Number(limitRaw);
+
+    const pagination = await listSlots({ page, limit });
+
+    res.json(pagination);
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      if (err.message === "Invalid page" || err.message === "Invalid limit" || err.message === "Limit exceeds maximum allowed value") {
+        return res.status(400).json({ error: err.message });
+      }
+    }
+
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 if (process.env.NODE_ENV !== "test") {
