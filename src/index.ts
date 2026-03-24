@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
-import { validateRequiredFields } from "./middleware/validation";
+import { validateRequiredFields } from "./middleware/validation.js";
+import checkoutRouter from "./routes/checkout.js";
 
 const app = express();
 const PORT = process.env.PORT ?? 3001;
@@ -21,6 +22,9 @@ const options = {
 
 const specs = swaggerJsdoc(options);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
+
+// Mount checkout API routes
+app.use("/api/v1/checkout", checkoutRouter);
 
 app.get("/health", (_req, res) => {
   res.json({ status: "ok", service: "chronopay-backend" });
