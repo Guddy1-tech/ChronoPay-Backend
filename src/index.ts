@@ -1,15 +1,17 @@
 import express from "express";
 import cors from "cors";
-import { validateRequiredFields } from "./middleware/validation";
+import swaggerUi from "swagger-ui-express";
+import swaggerJsdoc from "swagger-jsdoc";
+
+import slotsRouter from "./routes/slots.js";
+import { errorHandler } from "./middleware/errorHandler.js";
+import { getRedisClient } from "./utils/redis.js";
 
 const app = express();
 const PORT = process.env.PORT ?? 3001;
 
 app.use(cors());
 app.use(express.json());
-
-import swaggerUi from "swagger-ui-express";
-import swaggerJsdoc from "swagger-jsdoc";
 
 const options = {
   swaggerDefinition: {
@@ -22,31 +24,19 @@ const options = {
 const specs = swaggerJsdoc(options);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 
-app.get("/health", (_req, res) => {
-  res.json({ status: "ok", service: "chronopay-backend" });
+app.get("/health", async (_req, res) => {
+  try {
+    const redis = getRedisClient();
+    await redis.ping();
+    res.json({ status: "ok", service: "chronopay-backend", redis: "connected" });
+  } catch (err) {
+    res.status(503).json({ status: "error", service: "chronopay-backend", redis: "disconnected" });
+  }
 });
 
-app.get("/api/v1/slots", (_req, res) => {
-  res.json({ slots: [] });
-});
+app.use("/api/v1/slots", slotsRouter);
 
-app.post(
-  "/api/v1/slots",
-  validateRequiredFields(["professional", "startTime", "endTime"]),
-  (req, res) => {
-    const { professional, startTime, endTime } = req.body;
-
-    res.status(201).json({
-      success: true,
-      slot: {
-        id: 1,
-        professional,
-        startTime,
-        endTime,
-      },
-    });
-  },
-);
+app.use(errorHandler);
 
 if (process.env.NODE_ENV !== "test") {
   app.listen(PORT, () => {

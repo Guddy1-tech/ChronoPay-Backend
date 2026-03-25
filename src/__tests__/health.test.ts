@@ -7,6 +7,7 @@ describe("ChronoPay API", () => {
     expect(res.status).toBe(200);
     expect(res.body.status).toBe("ok");
     expect(res.body.service).toBe("chronopay-backend");
+    expect(res.body.redis).toBe("connected");
   });
 
   it("GET /api/v1/slots returns slots array", async () => {
