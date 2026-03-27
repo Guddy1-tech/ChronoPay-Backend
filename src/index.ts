@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
-import { validateRequiredFields } from "./middleware/validation";
+import { validateRequiredFields } from "./middleware/validation.js";
+import { requireRole, roles } from "./middleware/rbac.js";
 
 const app = express();
 const PORT = process.env.PORT ?? 3001;
@@ -32,6 +33,7 @@ app.get("/api/v1/slots", (_req, res) => {
 
 app.post(
   "/api/v1/slots",
+  requireRole([roles.admin, roles.professional]),
   validateRequiredFields(["professional", "startTime", "endTime"]),
   (req, res) => {
     const { professional, startTime, endTime } = req.body;
