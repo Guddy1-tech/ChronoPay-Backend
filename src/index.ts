@@ -1,6 +1,8 @@
 import express from "express";
 import cors from "cors";
-import { validateRequiredFields } from "./middleware/validation";
+import process from "node:process";
+import { validateRequiredFields } from "./middleware/validation.js";
+import { configService } from "./config/config.service.js";
 
 const app = express();
 const PORT = process.env.PORT ?? 3001;
@@ -28,6 +30,29 @@ app.get("/health", (_req, res) => {
 
 app.get("/api/v1/slots", (_req, res) => {
   res.json({ slots: [] });
+});
+
+/**
+ * Dummy token verification endpoint to demonstrate secret rotation.
+ * In a real application, this would use a JWT library.
+ */
+app.post("/api/v1/auth/verify", (req, res) => {
+  const { token } = req.body;
+  if (!token) {
+    return res.status(400).json({ success: false, error: "Token is required" });
+  }
+
+  // Get all active versions of the secret (primary + previous during rotation)
+  const validSecrets = configService.getAllSecretVersions("JWT_SECRET");
+
+  // Simulate token verification against all valid secrets
+  const isValid = validSecrets.some((secret) => token === `valid-token-for-${secret}`);
+
+  if (isValid) {
+    res.json({ success: true, message: "Token is valid" });
+  } else {
+    res.status(401).json({ success: false, error: "Invalid token" });
+  }
 });
 
 app.post(
