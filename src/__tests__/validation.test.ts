@@ -81,6 +81,7 @@ describe("Input validation middleware", () => {
 
     expect(res.status).toBe(201);
     expect(res.body.success).toBe(true);
+    expect(res.body.meta.invalidatedKeys).toContain("slots:list:all");
   });
 
   it("should reject missing professional", async () => {
