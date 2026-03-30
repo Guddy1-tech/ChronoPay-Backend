@@ -10,8 +10,11 @@
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand"
   },
   "dependencies": {
+    "express": "^4.21.0",
     "cors": "^2.8.5",
-    "express": "^4.21.0"
+    "pino": "^9.6.0",
+    "pino-http": "^10.4.0",
+    "pino-pretty": "^13.0.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
