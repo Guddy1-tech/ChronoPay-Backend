@@ -166,6 +166,12 @@ app.post(
   },
 );
 
+// 404 handler for unmatched routes
+app.use(notFoundMiddleware);
+
+// Global error handler
+app.use(errorHandler);
+
 if (process.env.NODE_ENV !== "test") {
   app.listen(PORT, () => {
     logInfo(`ChronoPay API listening on http://localhost:${PORT}`, {
